@@ -1,0 +1,57 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+// n^2*k
+
+// Memoization table to avoid recalculating the same states
+vector<vector<int>> memo;
+
+// solve(i, rem_k) = min cost to overflow 'rem_k' pots given pot 'i' is picked RIGHT NOW
+int solve(int i, int rem_k, vector<int>& stones) {
+    int n = stones.size();
+    
+    // Base Case: If this is the last pot we need, it drops stones into all remaining pots
+    if (rem_k == 1) {
+        return stones[i] * (n - i);
+    }
+    
+    // Return saved answer if we already calculated this state
+    if (memo[i][rem_k] != -1) return memo[i][rem_k];
+
+    int min_cost = 1e9; // 1e9 acts as infinity (INT_MAX can cause overflow during addition)
+    
+    // If we pick pot 'i', we must decide which pot 'j' to pick next.
+    // We try all valid future pots and take the minimum.
+    for (int j = i + 1; j <= n - rem_k + 1; j++) {
+        // Cost = (stones needed * gap to next pot) + cost of remaining pots
+        int current_cost = stones[i] * (j - i) + solve(j, rem_k - 1, stones);
+        min_cost = min(min_cost, current_cost);
+    }
+    
+    return memo[i][rem_k] = min_cost;
+}
+
+int main() {
+    int n, k;
+    cin >> n >> k;
+
+    vector<int> v(n);
+    for (int &x : v) cin >> x;
+    
+    // CRITICAL: The array must be sorted for the mathematical gaps to work correctly
+    sort(v.begin(), v.end());
+
+    // Initialize memo table with -1
+    memo.assign(n, vector<int>(k + 1, -1));
+
+    int ans = 1e9;
+    
+    // Just like your original `int left = solve(i+1)`, we need to test skipping pots.
+    // We do this by trying every possible starting pot and taking the minimum.
+    for (int i = 0; i <= n - k; i++) {
+        ans = min(ans, solve(i, k, v));
+    }
+
+    cout << ans << "\n";
+    return 0;
+}
