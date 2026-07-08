@@ -1,54 +1,67 @@
-#include <iostream>
-#include <vector>
-#include <numeric>
-#include <algorithm>
+/*
+You have to place an electronic banner of a company as high as it can be, so that whole the city can view the banner 
+standing on top of TWO PILLERS.
+The height of two pillers are to be chosen from given array.. say [1, 2, 3, 4, 6]. We have to maximise the height
+of the two pillars standing side by side, so that the pillars are of EQUAL HEIGHT and banner can be placed on top of it.
+In the above array, (1, 2, 3, 4, 6) we can choose pillars like this, say two pillars as p1 and p2.
+In case, there is no combination possible, print 0.
 
+INPUT :
+1
+5
+1 2 3 4 6
+Output :
+8
+*/
+
+#include <bits/stdc++.h>
 using namespace std;
 
-int maxBannerHeight(vector<int>& arr) {
-    int total_sum = accumulate(arr.begin(), arr.end(), 0);
-    
-    // dp[d] stores the max height of the taller pillar with a difference of d
-    vector<int> dp(total_sum + 1, -1);
-    dp[0] = 0; // Base case
-    
-    for (int x : arr) {
-        vector<int> next_dp = dp; // Copy current state
-        
-        for (int d = 0; d <= total_sum; d++) {
-            if (dp[d] == -1) continue;
-            
-            // Choice 1: Add to the taller pillar
-            if (d + x <= total_sum) {
-                next_dp[d + x] = max(next_dp[d + x], dp[d] + x);
-            }
-            
-            // Choice 2: Add to the shorter pillar
-            if (x <= d) {
-                // Shorter pillar stays shorter or becomes exactly equal
-                next_dp[d - x] = max(next_dp[d - x], dp[d]);
-            } else {
-                // Shorter pillar overtakes and becomes the new taller pillar
-                next_dp[x - d] = max(next_dp[x - d], dp[d] - d + x);
-            }
+vector<int> pillars;
+int ans;
+int n;
+
+vector<vector<int>> dp;    //dp[idx][diff]
+int dpApproach(int idx, int p1, int p2){
+    if(idx == n){
+        if(p1 == p2){
+            return 0;
+        }else {
+            return -1e8;
         }
-        dp = next_dp;
     }
-    
-    return dp[0];
+    if(dp[idx][abs(p1-p2)] != -1) return dp[idx][abs(p1-p2)];
+
+    // If we place the current pillar on either pillar, that rod becomes part of the final solution.
+    // our function returns the total length of the pillar which are used to make p1==p2 at last
+    // so our final pillar length required is ***dpApproach(0,0,0) / 2***
+    int t1 = pillars[idx]+dpApproach(idx+1, p1+pillars[idx], p2);  // add this on pillar 1
+    int t2 = pillars[idx]+dpApproach(idx+1, p1, p2+pillars[idx]);  // add this on pillar 2
+    int t3 = dpApproach(idx+1, p1, p2);             // skip this pillar
+ 
+    return dp[idx][abs(p1-p2)] = max({t1, t2, t3});
 }
 
-int main() {
+void solve(){
+    cin>>n;
+    
+    pillars.assign(n, 0);
+    for(int i=0; i<n; i++){
+        cin>>pillars[i];
+    }
+    //  Recursive DP     dp[idx][difference]
+    int pillarSum = accumulate(pillars.begin(), pillars.end(), 0);
+    dp.assign(n, vector<int>(pillarSum+1, -1));
+    cout<<dpApproach(0, 0, 0)/2<<"\n";
+}
+
+int main(){
     int t;
-    cin >> t;
-    while (t--) {
-        int n;
-        cin >> n;
-        vector<int> arr(n);
-        for(int i = 0; i < n; i++) {
-            cin >> arr[i];
-        }
-        cout << maxBannerHeight(arr) << endl;
+    t=1;
+    // cin>>t;
+
+    while(t--){
+        solve();
     }
     return 0;
 }
