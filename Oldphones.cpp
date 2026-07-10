@@ -2,11 +2,11 @@
 
 using namespace std;
 void genNum(const vector<int>&num,int o,unordered_map<long long,int> &mp , string curr)
-{
+{ 
    if(!curr.empty())
    {
        long long val=stoll(curr);
-       if (val > 100000) return;
+       if (val > 10000) return;
        int touch=curr.length();
        if(mp.find(val)==mp.end() || touch<mp[val])
        {
@@ -28,6 +28,9 @@ void genNum(const vector<int>&num,int o,unordered_map<long long,int> &mp , strin
 }
 
 int main() {
+    int t;
+    cin>>t;
+    while(t--){
     
     int n,m,o;
     cin>>n>>m>>o;
@@ -51,7 +54,7 @@ int main() {
     if(mp.find(tar)!=mp.end())
     {
         cout<<mp[tar]<<endl;
-        return 0;
+        continue;
     }
     unordered_map<long long,int>vis;
     for(auto it:mp)
@@ -59,6 +62,7 @@ int main() {
         pq.push({it.second,it.first});
         vis[it.first]=it.second;
     }
+    long long ans=-1;
     while(!pq.empty())
     {
         long long curr=pq.top().second;
@@ -68,8 +72,8 @@ int main() {
         continue;
         if(curr==tar)
         {
-            cout<<(steps+1)<<endl;
-            return 0;
+            ans=steps+1;
+            break;
             
         }
         long long next;
@@ -79,7 +83,7 @@ int main() {
             int next_steps = steps + 1 + it.second;
             
             // If touches + 1 (for the '=' sign) exceeds limit, skip it completely!
-            if(next_steps + 1 > o) {
+            if(next_steps>=o) {
                 continue;
             }
             for(int j=0;j<m;j++)
@@ -114,6 +118,7 @@ int main() {
                     
                 }
                 if(valid && (vis.find(next)==vis.end() || vis[next]>steps+1+it.second)){
+                    
                 pq.push({steps+1+it.second,next});
                     vis[next]=steps+1+it.second;
                 }
@@ -121,6 +126,8 @@ int main() {
         }
         
     }
+    cout<<ans<<endl;
+}
     
 	
 
