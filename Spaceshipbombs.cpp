@@ -81,76 +81,72 @@ ll nextPowerOfTwo(unsigned ll n){
     n|=(n>>32);
     return n+1;
 }
-vector<vector<vector<int>>>dp;
+vector<vector<vector<vector<int>>>> dp;
 bool notValid(int i,int j, int n,int m)
 {
-    return !(i>=0 && i<n && j<m && j>=0);
+    return !(i>=0 && i<=n && j<=m && j>=0);
 }
 
-int solve(int i,int j, int bomb, vector<vector<char>> &mat, int stepx, int stepy,int n,int m)
+int solve(int i,int j, int bomb, vector<vector<int>> &mat, int stepy,int n,int m)
 {
+    if(i<0)return 0;
     if(notValid(i,j,n,m))
-    return 0;
-    if(dp[i][j][bomb]!=-1)
-    return dp[i][j][bomb];
+    return INT_MIN;
+    int step_state = min(stepy, 6);
+    if(dp[i][j][bomb][step_state]!=-1)
+    return dp[i][j][bomb][step_state];
     int bombed=0;
     if(bomb)
     {
-        bombed=solve(i,j,0,mat,0,0,n,m);
+        bombed=solve(i,j,0,mat,0,n,m);
         
     }
-    int left=0;
-    int right=0;
-    int center=0;
-    if(mat[i][j]=='2')
+    int left=INT_MIN;
+    int right=INT_MIN;
+    int center=INT_MIN;
+    if(mat[i][j]==2)
     {
-        if(stepy<=5 && stepx<=2 && stepx>=-2)
+        if(stepy<=4)
         {
-            left=solve(i-1,j+1,bomb,mat,stepx+1,stepy+1,n,m);
-            right=solve(i-1,j-1,bomb,mat,stepx-1,stepy+1,n,m);
-            center=solve(i-1,j,bomb,mat,stepx,stepy+1,n,m);
+            left=solve(i-1,j+1,bomb,mat,stepy+1,n,m);
+            right=solve(i-1,j-1,bomb,mat,stepy+1,n,m);
+            center=solve(i-1,j,bomb,mat,stepy+1,n,m);
         }
         else
         {
-            return 0;
+            return INT_MIN;
         }
     }
     else
     {
-        int val=mat[i][j]-'0';
-        left=val+solve(i-1,j+1,bomb,mat,stepx+1,stepy+1,n,m);
-        right=val+solve(i-1,j-1,bomb,mat,stepx-1,stepy+1,n,m);
-        center=val+solve(i-1,j,bomb,mat,stepx,stepy+1,n,m);
+        int val=mat[i][j];
+        left=val+solve(i-1,j+1,bomb,mat,stepy+1,n,m);
+        right=val+solve(i-1,j-1,bomb,mat,stepy+1,n,m);
+        center=val+solve(i-1,j,bomb,mat,stepy+1,n,m);
     }
-    return dp[i][j][bomb]= max({bombed,left,right,center});
+    return dp[i][j][bomb][step_state]= max({bombed,left,right,center});
 }
 
 int main(){
     ll t;
     cin>>t;
+    int test=0;
     while(t--){
+        test++;
         int n,m;
-        cin>>n>>m;
-        vector<vector<char>>mat(n,vector<char>(m));
-        int startx;
-        int starty;
-        dp.assign(n+1,vector<vector<int>>(m+1,vector<int>(2,-1)));
+        cin>>n;
+        m=5;
+        vector<vector<int>>mat(n+1,vector<int>(m+1,0));
+        dp.assign(n+2,vector<vector<vector<int>>>(m+2,vector<vector<int>>(2,vector<int>(7,-1))));
         for(int i=0;i<n;i++)
         {
             for(int j=0;j<m;j++)
             {
                 cin>>mat[i][j];
-                if(mat[i][j]=='x')
-                mat[i][j]=0;
-                if(mat[i][j]=='S')
-                {
-                    startx=i;
-                    starty=j;
-                    mat[i][j]='0';
-                }
             }
         }
-        cout<<solve(startx,starty,1,mat,1e9,1e9,n,m);
+        mat.push_back({0,0,0,0,0});
+        cout<<"#"<<test<<" "<<solve(n,2,1,mat,6,n,m)<<endl;
         
         
 
